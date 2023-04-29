@@ -1,1 +1,1 @@
-# cli
+# Spice.xyz CLI
