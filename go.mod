@@ -7,6 +7,7 @@ require (
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/viper v1.15.0
 	github.com/spiceai/gospice/v2 v2.1.0
+	golang.org/x/sync v0.1.0
 )
 
 require (

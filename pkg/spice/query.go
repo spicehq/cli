@@ -68,7 +68,6 @@ func (c *Engine) Query(ctx context.Context, sql string, options *QueryOptions) e
 	}
 
 	if options.ShowDetails {
-		os.Stdout.WriteString("\n")
 		os.Stdout.WriteString(fmt.Sprintf("Fetched %d rows in: %s\n", numRows, queryExecutionTime))
 	}
 

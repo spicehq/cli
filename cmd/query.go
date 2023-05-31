@@ -1,11 +1,13 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
 	"github.com/spiceai/gospice/v2"
 	"github.com/spicehq/cli/pkg/spice"
+	"golang.org/x/sync/errgroup"
 )
 
 var (
@@ -43,15 +45,23 @@ spice query
 
 		engine := spice.NewEngine(spiceClient)
 
+		errGroup, errGroupCtx := errgroup.WithContext(cmd.Context())
 		for i := 0; i < iterations; i++ {
-			if err := engine.Query(cmd.Context(), query, &spice.QueryOptions{
-				FireQuery:    fireQuery,
-				OutputFormat: outputFormatFlag,
-				ShowDetails:  showDetailsFlag,
-			}); err != nil {
-				cmd.PrintErrf("error querying Spice.xyz: %s\n", err.Error())
-				os.Exit(1)
-			}
+			errGroup.Go(func() error {
+				if err := engine.Query(errGroupCtx, query, &spice.QueryOptions{
+					FireQuery:    fireQuery,
+					OutputFormat: outputFormatFlag,
+					ShowDetails:  showDetailsFlag,
+				}); err != nil {
+					return fmt.Errorf("error running query: %w", err)
+				}
+				return nil
+			})
+		}
+
+		if err := errGroup.Wait(); err != nil {
+			cmd.PrintErrf("error running query: %s\n", err.Error())
+			os.Exit(1)
 		}
 	},
 }
