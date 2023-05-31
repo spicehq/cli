@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
-	"github.com/spiceai/gospice"
+	"github.com/spiceai/gospice/v2"
 	"github.com/spicehq/cli/pkg/arrow"
 )
 
@@ -41,7 +41,7 @@ spice query
 		}
 
 		startTime := time.Now()
-		reader, err := spice.Query(cmd.Context(), query)
+		reader, err := spice.FireQuery(cmd.Context(), query)
 		if err != nil {
 			cmd.PrintErrf("error querying Spice.xyz: %s\n", err.Error())
 			os.Exit(1)
