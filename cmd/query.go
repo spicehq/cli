@@ -2,17 +2,18 @@ package main
 
 import (
 	"os"
-	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/spiceai/gospice/v2"
-	"github.com/spicehq/cli/pkg/arrow"
+	"github.com/spicehq/cli/pkg/spice"
 )
 
 var (
 	apiKeyFlag       string
 	outputFormatFlag string
 	showDetailsFlag  bool
+	iterations       int
+	fireQuery        bool
 )
 
 var queryCmd = &cobra.Command{
@@ -32,58 +33,35 @@ spice query
 			query = args[0]
 		}
 
-		spice := gospice.NewSpiceClient()
-		defer spice.Close()
+		spiceClient := gospice.NewSpiceClient()
+		defer spiceClient.Close()
 
-		if err := spice.Init(apiKeyFlag); err != nil {
+		if err := spiceClient.Init(apiKeyFlag); err != nil {
 			cmd.PrintErrf("error intializing the Spice.xyz SDK: %s\n", err.Error())
 			os.Exit(1)
 		}
 
-		startTime := time.Now()
-		reader, err := spice.FireQuery(cmd.Context(), query)
-		if err != nil {
-			cmd.PrintErrf("error querying Spice.xyz: %s\n", err.Error())
-			os.Exit(1)
-		}
-		defer reader.Release()
-		queryExecutionTime := time.Since(startTime)
+		engine := spice.NewEngine(spiceClient)
 
-		for reader.Next() {
-			record := reader.Record()
-			defer record.Release()
-
-			switch outputFormatFlag {
-			case "csv":
-				if err = arrow.WriteCsv(os.Stdout, record); err != nil {
-					cmd.PrintErrf("error writing CSV: %s\n", err.Error())
-					os.Exit(1)
-				}
-			case "json":
-				data, err := record.MarshalJSON()
-				if err != nil {
-					cmd.PrintErrf("error writing JSON: %s\n", err.Error())
-					os.Exit(1)
-				}
-				os.Stdout.Write(data)
-				os.Stdout.WriteString("\n")
-			default:
-				cmd.PrintErrf("error: invalid output format: %s\n", outputFormatFlag)
+		for i := 0; i < iterations; i++ {
+			if err := engine.Query(cmd.Context(), query, &spice.QueryOptions{
+				FireQuery:    fireQuery,
+				OutputFormat: outputFormatFlag,
+				ShowDetails:  showDetailsFlag,
+			}); err != nil {
+				cmd.PrintErrf("error querying Spice.xyz: %s\n", err.Error())
 				os.Exit(1)
 			}
-		}
-
-		if showDetailsFlag {
-			os.Stdout.WriteString("\n")
-			cmd.Printf("Fetched in: %s\n", queryExecutionTime)
 		}
 	},
 }
 
 func init() {
 	queryCmd.Flags().StringVar(&apiKeyFlag, "api_key", "", "Spice.xyz API Key")
-	queryCmd.Flags().StringVar(&outputFormatFlag, "output_format", "csv", "Output format (csv or json)")
+	queryCmd.Flags().StringVar(&outputFormatFlag, "output_format", "csv", "Output format (csv, json, or none)")
 	queryCmd.Flags().BoolVar(&showDetailsFlag, "show_details", false, "Show details of query")
+	queryCmd.Flags().BoolVar(&fireQuery, "firequery", false, "Fire query")
+	queryCmd.Flags().IntVar(&iterations, "iterations", 1, "Number of iterations to run the query")
 
 	RootCmd.AddCommand(queryCmd)
 }
