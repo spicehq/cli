@@ -68,7 +68,7 @@ spice query
 
 func init() {
 	queryCmd.Flags().StringVar(&apiKeyFlag, "api_key", "", "Spice.xyz API Key")
-	queryCmd.Flags().StringVar(&outputFormatFlag, "output_format", "csv", "Output format (csv, json, or none)")
+	queryCmd.Flags().StringVar(&outputFormatFlag, "output_format", "csv", "Output format (csv, json, parquet or none)")
 	queryCmd.Flags().BoolVar(&showDetailsFlag, "show_details", false, "Show details of query")
 	queryCmd.Flags().BoolVar(&fireQuery, "firequery", false, "Fire query")
 	queryCmd.Flags().IntVar(&iterations, "iterations", 1, "Number of iterations to run the query")

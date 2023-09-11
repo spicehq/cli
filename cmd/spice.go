@@ -8,12 +8,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-var (
-	algorithmFlag      string
-	numberEpisodesFlag int64
-	loggers            []string
-)
-
 var RootCmd = &cobra.Command{
 	Use:   "spice",
 	Short: "Spice.xyz CLI",
