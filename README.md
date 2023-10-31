@@ -1,1 +1,1 @@
-# Spice.xyz CLI
+# Spice.ai CLI
